@@ -1,0 +1,12 @@
+USE Becimeco
+SELECT 'D',';', AlbaranesVentasCab.Factura, ';;',Facturas.fecha, ';','EUR',';' ,AlbaranesVentasLin.Articulo
+,';', AlbaranesVentasLin.Descripcion, ';', 'Unidades', ';', AlbaranesVentasLin.Cantidad, ';', AlbaranesVentasLin.Precio
+, ';', AlbaranesVentasLin.PjeDto, ';;', AlbaranesVentasLin.PjeIva, ';', 'IGIC', ';',ROUND (AlbaranesVentasLin.Importe*(AlbaranesVentasLin.PjeIva/100),2)
+,';',(AlbaranesVentasLin.Cantidad*AlbaranesVentasLin.Precio)-(AlbaranesVentasLin.Precio*(AlbaranesVentasLin.PjeDto/100)),';'
+,AlbaranesVentasCab.Albaran, ';', AlbaranesVentasCab.Fecha,';;'
+,Facturas.ImporteIva1+Facturas.ImporteIva2+Facturas.ImporteIva3+Facturas.ImporteIva4,';',Facturas.importe,';;'
+FROM dbo.AlbaranesVentasCab
+JOIN facturas on AlbaranesVentasCab.Factura=Facturas.factura
+JOIN AlbaranesVentasLin on AlbaranesVentasCab.Albaran=AlbaranesVentasLin.Albaran
+WHERE AlbaranesVentasCab.CLIENTE LIKE '09257' AND facturas.Factura =201501964 AND AlbaranesVentasLin.Articulo<>'NO'
+ORDER BY AlbaranesVentasCab.ALBARAN desc;

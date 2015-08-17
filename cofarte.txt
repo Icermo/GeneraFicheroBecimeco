@@ -1,0 +1,25 @@
+---------IVA 3------------
+USE Becimeco
+SELECT Transporte,'#','#',Albaran,'#','95','#',Total=ImporteBase1,'#',PjeIva1
+FROM dbo.AlbaranesVentasCab
+WHERE FECHA BETWEEN '26/05/15' AND '26/06/15' AND PjeIva1 = 3 AND Transporte > 0
+AND CLIENTE LIKE '07562' AND IMPORTE > 0
+ORDER BY ALBARAN
+
+
+---------IVA 7.1------------
+USE Becimeco
+SELECT Transporte,'#','#',Albaran,'#','95','#',Total=(ImporteBase1),'#',PjeIva1
+FROM dbo.AlbaranesVentasCab
+WHERE FECHA BETWEEN '26/05/15' AND '26/06/15' AND PjeIva1 = 7 AND Transporte > 0
+AND CLIENTE LIKE '07562' AND IMPORTE > 0
+ORDER BY ALBARAN
+
+
+---------IVA 7.2------------
+USE Becimeco
+SELECT Transporte,'#','#',Albaran,'#','95','#',Total=(ImporteBase2),'#',PjeIva2
+FROM dbo.AlbaranesVentasCab
+WHERE FECHA BETWEEN '26/05/15' AND '26/06/15' AND PjeIva2 = 7 AND Transporte > 0
+AND CLIENTE LIKE '07562' AND IMPORTE > 0
+ORDER BY ALBARAN
