@@ -1,9 +1,10 @@
 package generaficherobecimecobavel;
 
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,9 +23,9 @@ public class FicherosCofarte  {
         boolean veri=false;  // se pondra en true si hay más registros
         int i;
         ResultSetMetaData rsmetadatos;
-        Date pasaFecha;
         SimpleDateFormat formatoFecha;
-        FileWriter ficheroSalida;
+        OutputStreamWriter ficheroFacts;
+        OutputStreamWriter ficheroAbos;
 
 public FicherosCofarte (String cadenaPasada){
         try {
@@ -37,53 +38,106 @@ public FicherosCofarte (String cadenaPasada){
             {
                 rsmetadatos = rset.getMetaData();
                 int nCol;
-                int contadorPos=0;
                 nCol= rsmetadatos.getColumnCount();
+                boolean veriCreaFichFacts=false;
+                boolean veriCreaFichAbos=false;
                 while(rset.next()){ // mientras consiga una nueva fila (se puede mover a la siguiente ) = obtener siguiente fila.
-                    contadorPos++;
                     veri=true;  //Hay datos.
-                    String[] filaNueva = new String[nCol+1]; // creamos un array de objetos del tamaño de las columnas encontradas
                     for (i=0; i < nCol; i++){
-                        if (Integer.parseInt(rset.getString(13))>=0){ // facturas no rectificativas, normales
-                            if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(11))){
-                                //Linea del IGIC 7 en el primer campo (B)
+                        if (Integer.parseInt(rset.getString(7))>=0){ // facturas no rectificativas, normales
+                            if (veriCreaFichFacts==false){
+                                veriCreaFichFacts=true; //hago saltar el indicador
+                                try {// creo el fichero de facturas, una vez pasamos el if para evtar crearlo para nada
+                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\FactMESAÑO"+".csv"),"UTF-8");
+                                    //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
+                                    //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
+                                    //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                    JOptionPane.showMessageDialog(null, "Error al crear el fichero de facturas (no rectificativas)"+ex);
                                 }
-                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(11))){
-                                //Linea del IGIC 3 en el primer campo(A)
+                            }
+                        if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(5))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"B");
+                                }
+                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(5))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"A");
                             }  
-                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(12))){
-                                //Linea del IGIC 7 en el segundo campo (B)
+                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "0".equals(rset.getString(5))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"0");  //caso que no creo que se de
+                            } 
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(6))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"B");
                             }      
-                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(12))){
-                                //Linea del IGIC 3 en el segundo campo, (puede que no se de nunca) (A)
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(6))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"A");//caso que no creo que se de
+                            } 
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "0".equals(rset.getString(6))){
+                                 ficheroFacts.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"0");// Caso que no creo que se de
                             } 
                         }
-                        else if (Integer.parseInt(rset.getString(13))<0){ // al ser negativo es un abono, rectificativas, y los abonos van en un fichero aparte
-                            if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(11))){
-                                //Linea del IGIC 7 en el primer campo (B)
+                        else if (Integer.parseInt(rset.getString(7))<0){ // al ser negativo es un abono, rectificativas, y los abonos van en un fichero aparte
+                            if (veriCreaFichAbos==false){
+                                veriCreaFichAbos=true; //hago saltar el indicador
+                                try {// creo el fichero de facturas, una vez pasamos el if para evtar crearlo para nada
+                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\FactMESAÑO"+".csv"),"UTF-8");
+                                    //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
+                                    //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
+                                    //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                    JOptionPane.showMessageDialog(null, "Error al crear el fichero de facturas (no rectificativas)"+ex);
                                 }
-                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(11))){
-                                //Linea del IGIC 3 en el primer campo(A)
+                            }
+                            if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(5))){
+                                ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"B");
+                                }
+                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(5))){
+                                 ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"A");
                             }  
-                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(12))){
-                                //Linea del IGIC 7 en el segundo campo (B)
-                            }      
-                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(12))){
-                                //Linea del IGIC 3 en el segundo campo, (puede que no se de nunca) (A)
+                            else if ("PjeIva1".equals(rsmetadatos.getColumnName(i+1)) && "0".equals(rset.getString(5))){
+                                 ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(3)+"#"+"0");//caso que no creo que se de
                             } 
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "7".equals(rset.getString(6))){
+                                 ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"B");
+                            }      
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "3".equals(rset.getString(6))){
+                                 ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"A");//caso que no creo que se de
+                            } 
+                            else if ("PjeIva2".equals(rsmetadatos.getColumnName(i+1)) && "0".equals(rset.getString(6))){
+                                 ficheroAbos.write(rset.getString(1)+"##"+rset.getString(2)+"#"+"95"+"#"+rset.getString(4)+"#"+"0");//caso que no creo que se de
+                            }      
                         }
-                                 
                     }
-                    VentanaPrincipal.modelo.addRow(filaNueva); // añadirmos fila a fila
                 }
-                VentanaPrincipal.modelo.fireTableDataChanged(); // decimos que han cambiado los datos para que se repinte
-                
-                if (veri==false) JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
+                if (veriCreaFichFacts==true){
+                    try { 
+                        ficheroFacts.close();
+                        //this.ficheroBuff.close(); 
+                        //this.ficheroEscritura.close(); 
+                        } catch (IOException ex) {
+                                Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                JOptionPane.showMessageDialog(null, "Error al cerrar fichero de facturas (no rectificativas)"+ex);
+                        }
+                    }
+                if (veriCreaFichAbos==true){
+                    try { 
+                        ficheroAbos.close();
+                        //this.ficheroBuff.close(); 
+                        //this.ficheroEscritura.close(); 
+                        } catch (IOException ex) {
+                                Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                JOptionPane.showMessageDialog(null, "Error al cerrar fichero de abonos (rectificativas)"+ex);
+                        }
+                    }
+            if (veri==false) JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
                 rset.close();
                 stmt.close();
                 conn.close();
             } catch (SQLException ex){
                 Logger.getLogger(RellenaRejillaBD.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(FicherosCofarte.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (SQLException ex) {
             Logger.getLogger(RellenaRejillaBD.class.getName()).log(Level.SEVERE, null, ex);
