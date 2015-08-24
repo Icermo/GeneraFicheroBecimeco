@@ -24,9 +24,7 @@ public class FicherosBavel  {
         Date pasaFecha;
         SimpleDateFormat formatoFecha;
         OutputStreamWriter ficheroOut;
-        File ficheroFisico;
         FileWriter ficheroEscritura;
-        BufferedWriter ficheroBuff;
 
 
 
@@ -48,7 +46,7 @@ public FicherosBavel (String cadenaPasada){
                 int nCol= rsmetadatos.getColumnCount();
                 String tipoFac;
                 String numFacAct;//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
-                String numFacComp="-sin dato-";//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
+                String numFacComp="-sin datos-";//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
                 String filaNueva; // creamos un array de objetos del tamaño de las columnas encontradas
                 
                 
@@ -92,7 +90,7 @@ public FicherosBavel (String cadenaPasada){
                                 filaNueva=filaNueva+fechaConvert;
                                 }
                             else if ("RED1".equals(rsmetadatos.getColumnName(i+1))||"RED2".equals(rsmetadatos.getColumnName(i+1))||"RED3".equals(rsmetadatos.getColumnName(i+1))){
-                                filaNueva=filaNueva+Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena//Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva=filaNueva+Double.toString(Math.floor(Double.parseDouble(rset.getString(i+1))*100)/100); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena//Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
                                 }
                             
                             else{
@@ -141,7 +139,7 @@ public FicherosBavel (String cadenaPasada){
                                 filaNueva=filaNueva+fechaConvert;
                                 }
                             else if ("RED1".equals(rsmetadatos.getColumnName(i+1))||"RED2".equals(rsmetadatos.getColumnName(i+1))||"RED3".equals(rsmetadatos.getColumnName(i+1))){
-                                filaNueva=filaNueva+Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva=filaNueva+Double.toString(Math.floor(Double.parseDouble(rset.getString(i+1))*100)/100); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
                                 }
                             
                             else{
