@@ -26,6 +26,7 @@ public class FicherosCofarte  {
         SimpleDateFormat formatoFecha;
         OutputStreamWriter ficheroFacts;
         OutputStreamWriter ficheroAbos;
+        
 
 public FicherosCofarte (String cadenaPasada){
         try {
@@ -41,14 +42,24 @@ public FicherosCofarte (String cadenaPasada){
                 nCol= rsmetadatos.getColumnCount();
                 boolean veriCreaFichFacts=false;
                 boolean veriCreaFichAbos=false;
+                int contNumFich=0;
+                
+
+                
                 while(rset.next()){ // mientras consiga una nueva fila (se puede mover a la siguiente ) = obtener siguiente fila.
                     veri=true;  //Hay datos.
                     for (i=0; i < nCol; i++){
                         if (Integer.parseInt(rset.getString(7))>=0){ // facturas no rectificativas, normales
                             if (veriCreaFichFacts==false){
                                 veriCreaFichFacts=true; //hago saltar el indicador
+                                //Pillamos el mes y año para ponerlo como nombre del fichero (requerido por el formato Cofarte)
+                                this.formatoFecha = new SimpleDateFormat("MMM");
+                                String Mes=formatoFecha.format(rset.getString(8));
+                                this.formatoFecha = new SimpleDateFormat("yyyy");
+                                String Ano=formatoFecha.format(rset.getString(8)); 
                                 try {// creo el fichero de facturas, una vez pasamos el if para evtar crearlo para nada
-                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\FactMESAÑO"+".csv"),"UTF-8");
+                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\Fact"+Mes+Ano+".csv"),"UTF-8");
+                                    contNumFich++;
                                     //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
                                     //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
                                     //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
@@ -79,8 +90,14 @@ public FicherosCofarte (String cadenaPasada){
                         else if (Integer.parseInt(rset.getString(7))<0){ // al ser negativo es un abono, rectificativas, y los abonos van en un fichero aparte
                             if (veriCreaFichAbos==false){
                                 veriCreaFichAbos=true; //hago saltar el indicador
+                                //Pillamos el mes y año para ponerlo como nombre del fichero (requerido por el formato Cofarte)
+                                this.formatoFecha = new SimpleDateFormat("MMM");
+                                String Mes=formatoFecha.format(rset.getString(8));
+                                this.formatoFecha = new SimpleDateFormat("yyyy");
+                                String Ano=formatoFecha.format(rset.getString(8)); 
                                 try {// creo el fichero de facturas, una vez pasamos el if para evtar crearlo para nada
-                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\FactMESAÑO"+".csv"),"UTF-8");
+                                    this.ficheroFacts = new OutputStreamWriter(new FileOutputStream("C:\\exporCofarte\\Abo"+Mes+Ano+".csv"),"UTF-8");
+                                    contNumFich++;
                                     //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
                                     //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
                                     //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
@@ -131,6 +148,7 @@ public FicherosCofarte (String cadenaPasada){
                         }
                     }
             if (veri==false) JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
+            else if (veriCreaFichAbos||veriCreaFichFacts) JOptionPane.showMessageDialog(null, "Fin del proceso. Se generaron "+contNumFich+" ficheros.");
                 rset.close();
                 stmt.close();
                 conn.close();
