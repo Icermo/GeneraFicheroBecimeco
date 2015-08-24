@@ -83,7 +83,7 @@ public class VentanaPrincipal extends JFrame{
                     JOptionPane.showMessageDialog(null, "Elija un formato de archivo: Cofarte o BaVel");
                     break;
                 case 1:
-                    String cadenaAPasar1=("SELECT Transporte,'#','#',Albaran,'#','95','#',Total=(ImporteBase1), Total2=(ImporteBase2),'#', PjeIva1, PjeIva2, Importe\n" +
+                    String cadenaAPasar1=("SELECT Transporte,Albaran,Total=(ImporteBase1), Total2=(ImporteBase2), PjeIva1, PjeIva2, Importe\n" +
                                             "FROM dbo.AlbaranesVentasCab\n" +
                                             "WHERE FECHA BETWEEN '26/06/15' AND '25/07/15'\n" +
                                             "AND CLIENTE LIKE '07562'\n" +
