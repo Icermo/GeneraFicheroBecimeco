@@ -55,10 +55,18 @@ public class VentanaPrincipal extends JFrame{
                     JOptionPane.showMessageDialog(null, "Elija un formato de archivo: Cofarte o BaVel");
                     break;
                 case 1:
-                    JOptionPane.showMessageDialog(null, "Formato aún no soportado...");
+                    RellenaRejillaBD  rellenaBD1 = new RellenaRejillaBD ("SELECT AlbaranesVentasCab.cliente, AlbaranesVentasCab.RazonSocial, AlbaranesVentasCab.Factura, Facturas.fecha,AlbaranesVentasCab.Albaran, AlbaranesVentasCab.Fecha,IMPORTE DE ALBARAN SI NO HAY QUE CALCULARLO,Facturas.importe\n" +
+                        "FROM dbo.AlbaranesVentasCab JOIN facturas on AlbaranesVentasCab.Factura=Facturas.factura JOIN AlbaranesVentasLin on AlbaranesVentasCab.Albaran=AlbaranesVentasLin.Albaran\n" +
+                        "WHERE Facturas.Fecha BETWEEN '"+txtFechaInicio.getText()+"' AND '"+txtFechaFin.getText()+"' AND AlbaranesVentasCab.CLIENTE LIKE '"+txtCliente.getText()+"' AND AlbaranesVentasLin.Articulo<>'NO' \n" +
+                        "ORDER BY AlbaranesVentasCab.ALBARAN desc");
+                        //Nos evitamos cambios en los datos de consulta para que no haya diferencia con los ficheros volcados si se cambiaran dichos datos
+                        this.comboFormato.setEnabled(false);
+                        /*this.datochooser deshabilitado
+                        this.dCFin.setEnabled(false);
+                        hacer lo contrario luego en el limpia rejilla*/
                     break;
                 case 2:
-                    RellenaRejillaBD  rellenaBD = new RellenaRejillaBD ("SELECT AlbaranesVentasCab.cliente, AlbaranesVentasCab.RazonSocial, AlbaranesVentasCab.Factura, Facturas.fecha,AlbaranesVentasCab.Albaran, AlbaranesVentasCab.Fecha,(AlbaranesVentasLin.Cantidad*AlbaranesVentasLin.Precio)-(AlbaranesVentasLin.Precio*(AlbaranesVentasLin.PjeDto/100)),Facturas.importe\n" +
+                    RellenaRejillaBD  rellenaBD2 = new RellenaRejillaBD ("SELECT AlbaranesVentasCab.cliente, AlbaranesVentasCab.RazonSocial, AlbaranesVentasCab.Factura, Facturas.fecha,AlbaranesVentasCab.Albaran, AlbaranesVentasCab.Fecha,IMPORTE DE ALBARAN SI NO HAY QUE CALCULARLO,Facturas.importe\n" +
                         "FROM dbo.AlbaranesVentasCab JOIN facturas on AlbaranesVentasCab.Factura=Facturas.factura JOIN AlbaranesVentasLin on AlbaranesVentasCab.Albaran=AlbaranesVentasLin.Albaran\n" +
                         "WHERE Facturas.Fecha BETWEEN '"+txtFechaInicio.getText()+"' AND '"+txtFechaFin.getText()+"' AND AlbaranesVentasCab.CLIENTE LIKE '"+txtCliente.getText()+"' AND AlbaranesVentasLin.Articulo<>'NO' \n" +
                         "ORDER BY AlbaranesVentasCab.ALBARAN desc");
@@ -83,7 +91,7 @@ public class VentanaPrincipal extends JFrame{
                     JOptionPane.showMessageDialog(null, "Elija un formato de archivo: Cofarte o BaVel");
                     break;
                 case 1:
-                    String cadenaAPasar1=("SELECT Transporte,Albaran,Total=(ImporteBase1), Total2=(ImporteBase2), PjeIva1, PjeIva2, Importe\n" +
+                    String cadenaAPasar1=("SELECT Transporte, Albaran, Total=(ImporteBase1), Total2=(ImporteBase2), PjeIva1, PjeIva2, Importe, Fecha\n" +
                                             "FROM dbo.AlbaranesVentasCab\n" +
                                             "WHERE FECHA BETWEEN '26/06/15' AND '25/07/15'\n" +
                                             "AND CLIENTE LIKE '07562'\n" +
@@ -206,7 +214,7 @@ public class VentanaPrincipal extends JFrame{
         this.comboFormato.addItem("Formato Bavel");
         this.getContentPane().add(comboFormato,constraints);
         
-        JLabel lblFechaInicio = new JLabel("Fecha 1ª factura:");
+        JLabel lblFechaInicio = new JLabel("Fecha inicial:");
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.gridwidth=1;
@@ -237,7 +245,7 @@ public class VentanaPrincipal extends JFrame{
         }
     });
 
-        JLabel lblFechaFin = new JLabel("Fecha ult. factura:");
+        JLabel lblFechaFin = new JLabel("Fecha final:");
         constraints.gridx = 2;
         constraints.gridy = 0;
         constraints.gridwidth=1;
