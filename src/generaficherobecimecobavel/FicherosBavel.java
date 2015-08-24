@@ -25,6 +25,7 @@ public class FicherosBavel  {
         SimpleDateFormat formatoFecha;
         OutputStreamWriter ficheroOut;
         FileWriter ficheroEscritura;
+        
 
 
 
@@ -37,6 +38,7 @@ public FicherosBavel (String cadenaPasada){
                 ResultSet rset = stmt.executeQuery(cadenaPasada) // rset guarda el resultado del query
                 )
             {
+                
                 boolean veri=false;  // se pondra en true si hay más registros
                 boolean iguala=false; // Se pone en true cuando hemos igualdo por primera vez y creado el primer fichero
                 int i;
@@ -48,7 +50,7 @@ public FicherosBavel (String cadenaPasada){
                 String numFacAct;//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
                 String numFacComp="-sin datos-";//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
                 String filaNueva; // creamos un array de objetos del tamaño de las columnas encontradas
-                
+                int contNumFich=0;
                 
                 while(rset.next()){ // For que baja de línea y rser.next
                     numFacAct=rset.getString(3); //al principio del while rset.next, es decir, al bajar una línea de la consulta, pillamos el nuevo num de fact
@@ -70,6 +72,7 @@ public FicherosBavel (String cadenaPasada){
                         
                         try {// creo el PRIMER filewriter
                             this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+VentanaPrincipal.txtCliente.getText()+"-Num.406-"+numFacComp+".csv"),"UTF-8");
+                            contNumFich++;
                             //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
                             //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
                             //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
@@ -122,6 +125,7 @@ public FicherosBavel (String cadenaPasada){
                         }
                         try {
                             this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+VentanaPrincipal.txtCliente.getText()+"-Num.406-"+numFacComp+".csv"),"UTF-8");
+                            contNumFich++;
                             //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\"+numFacComp+".csv"); //creo el nuevo fichero físico
                             //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el nuevo fichero de escritura
                             //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
@@ -168,6 +172,7 @@ public FicherosBavel (String cadenaPasada){
                     }
                 
                 if (veri==false) JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
+                else JOptionPane.showMessageDialog(null, "Fin del proceso. Se generaron"+contNumFich+" ficheros.");
                 rset.close();
                 stmt.close();
                 conn.close();
