@@ -15,7 +15,7 @@ public class GeneraFicheroBecimecoBavel {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-          VentanaPrincipal frmPrincipal = new VentanaPrincipal("Consulta de ventas por vendedor y cliente");
+          VentanaPrincipal frmPrincipal = new VentanaPrincipal("Exportación de ficheros BaVel y Cofarte");
           frmPrincipal.setVisible(true);
         
          // true hace que se vea.,
