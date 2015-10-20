@@ -12,6 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -29,7 +30,7 @@ public class FicherosBavel  {
 
 
 
-public FicherosBavel (String cadenaPasada){
+public FicherosBavel (String cadenaPasada, String clientePasado){
         try {
             DriverManager.registerDriver (new com.microsoft.sqlserver.jdbc.SQLServerDriver()); //registramos el driver
             try (
@@ -49,33 +50,34 @@ public FicherosBavel (String cadenaPasada){
                 String tipoFac;
                 String numFacAct;//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
                 String numFacComp="-sin datos-";//Variable para guardar el número de factura y detectar cuando ha cambiado para así generar un nuevo
-                String filaNueva; // creamos un array de objetos del tamaño de las columnas encontradas
                 int contNumFich=0;
+                String[] filaNueva = new String[nCol+1]; 
+                ArrayList<String[]> arrList = new ArrayList<>();
+                float sumatorioIgic=0;
+                float sumatorioBase=0;
+                int contLin=0;
+                String stringTemp;
                 
-                while(rset.next()){ // For que baja de línea y rser.next
-                    numFacAct=rset.getString(3); //al principio del while rset.next, es decir, al bajar una línea de la consulta, pillamos el nuevo num de fact
+                while(rset.next()){//Baja de línea y rser.next
                     veri=true;  //verificador de que hay datos.
-                    filaNueva="";//limpiamos
-                    
+                    numFacAct=rset.getString(3); //al principio del while rset.next, es decir, al bajar una línea de la consulta, pillamos el nuevo num de fact
+                    for (j=0;j<nCol;j++)filaNueva[j]="";
                     // según sea una factura o una rectificativa //Metemos el tipo de factura
                     if (Float.parseFloat(rset.getString(36))>=0) {
                         tipoFac="D";  //Normal
-                        filaNueva=tipoFac;
+                        filaNueva[0]=tipoFac;
                     }  
                     else {
                         tipoFac="C";  //Rectificativa, negativa o abono
-                        filaNueva=tipoFac;
+                        filaNueva[0]=tipoFac;
                     } 
                     
                     if (iguala==false){  // Si nunca hemos igualado por primera vez ni creado el primer fichero
                         numFacComp=numFacAct; // Igualamos por primera vez al numero de factura actual
                         
-                        try {// creo el PRIMER filewriter
-                            this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+VentanaPrincipal.txtCliente.getText()+"-Num.406-"+numFacComp+".csv"),"UTF-8");
+                        try {// creo el PRIMER writer
+                            this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+clientePasado+"-Num.406-"+numFacComp+".csv"),"UTF-8");
                             contNumFich++;
-                            //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\Fac-"+tipoFac+"Cli-"+VentanaPrincipal.txtCliente.getText()+"Num-"+numFacComp+".csv"); //creo el primer fichero físico
-                            //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el primer fichero de escritura
-                            //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
                         } catch (IOException ex) {
                             Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
                             JOptionPane.showMessageDialog(null, "Error al crear el primer fichero"+ex);
@@ -90,30 +92,51 @@ public FicherosBavel (String cadenaPasada){
                                 pasaFecha=rset.getDate(i+1);
                                 this.formatoFecha = new SimpleDateFormat("dd-MM-yyyy");
                                 String fechaConvert=formatoFecha.format(pasaFecha);
-                                filaNueva=filaNueva+fechaConvert;
+                                filaNueva[i+1]=fechaConvert;
                                 }
-                            else if ("RED1".equals(rsmetadatos.getColumnName(i+1))||"RED2".equals(rsmetadatos.getColumnName(i+1))||"RED3".equals(rsmetadatos.getColumnName(i+1))){
-                                filaNueva=filaNueva+Double.toString(Math.floor(Double.parseDouble(rset.getString(i+1))*100)/100); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena//Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                            else if ("IMPIGICLIN".equals(rsmetadatos.getColumnName(i+1))){
+                                stringTemp=Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva[i+1]=stringTemp;
+                                sumatorioIgic=sumatorioIgic+Float.parseFloat(stringTemp);
                                 }
-                            
+                            else if ("IMPLIN".equals(rsmetadatos.getColumnName(i+1))){
+                                stringTemp=Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva[i+1]=stringTemp;
+                                sumatorioBase=sumatorioBase+Float.parseFloat(stringTemp);
+                                }
                             else{
-                                filaNueva=filaNueva+rset.getString(i+1);
+                                filaNueva[i+1]=rset.getString(i+1);
                             }      
                         }
-                        
-                        try {
-                            ficheroOut.write(filaNueva+"\n");
-                            //ficheroBuff.write(filaNueva);
-                            //ficheroBuff.newLine();
-                        } catch (IOException ex) {
-                            Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
-                            JOptionPane.showMessageDialog(null, "Error al escribir en fichero (if equals)"+ex);
-                        }
+                        contLin++;
+                        arrList.add(filaNueva);
+                        for (int z=0;z<nCol+1;z++)System.out.println(filaNueva[z]); 
                     }
                     
                     // Si el número de factura ha cambiado, guardamos el nuevo número y creamos un fichero nuevo con este nuevo número
                     else if(!numFacComp.equals(numFacAct)){ 
-                        numFacComp=numFacAct; // las hacemos iguales otra vez
+                        //while que mete los sumatorios de IGICs y Totales en las líneas de la factura anterior ya recorrida
+                        while (contLin>0){
+                            filaNueva=arrList.get(contLin-1);
+                            filaNueva[34]=Float.toString(sumatorioIgic);
+                            filaNueva[36]=Float.toString(sumatorioBase);
+                            
+                        
+                        //escribimos el fichero con cada elemento del array;
+                            try {
+                                for (j=0;j<nCol+1;j++){
+                                    ficheroOut.write(filaNueva[j]);    
+                                }
+                                ficheroOut.write("\n");
+                               
+                            } catch (IOException ex) {
+                                Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                JOptionPane.showMessageDialog(null, "Error al escribir en fichero (if no equals)"+ex);
+                                
+                            }
+                            contLin--;
+                        }
+                        
                         try { // cierro el anterior fichero de escritura
                             ficheroOut.close();
                             //this.ficheroBuff.close(); 
@@ -123,56 +146,80 @@ public FicherosBavel (String cadenaPasada){
                             JOptionPane.showMessageDialog(null, "Error al cerrar fichero (one)"+ex);
                             
                         }
+                        
+                        //como ya hemos escrito todos las líneas de la factura contenidas en el array limpiamos todo
+                        //contLin no hace talta ponerlo a cero  pq ya lo hemos ido restando hasta llegar a cero en el while
+                        arrList.clear();//limpiamos el array
+                        sumatorioIgic=0;//Pongo a cero el igic
+                        sumatorioBase=0; //a cero
+                        numFacComp=numFacAct; // las hacemos iguales otra vez
+                        
+                        //abro nuevo fichero de escritura
                         try {
-                            this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+VentanaPrincipal.txtCliente.getText()+"-Num.406-"+numFacComp+".csv"),"UTF-8");
+                            this.ficheroOut = new OutputStreamWriter(new FileOutputStream("C:\\exporBaVel\\Fac."+tipoFac+"-Cli."+clientePasado+"-Num.406-"+numFacComp+".csv"),"UTF-8");
                             contNumFich++;
-                            //this.ficheroFisico = new File ("C:\\Users\\ivanw7\\Desktop\\exporBaVel\\"+numFacComp+".csv"); //creo el nuevo fichero físico
-                            //this.ficheroEscritura =  new FileWriter (ficheroFisico);   // Creo el nuevo fichero de escritura
-                            //this.ficheroBuff = new BufferedWriter(ficheroEscritura);
                         } catch (IOException ex) {
                             Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
-                            JOptionPane.showMessageDialog(null, "Error al crear fichero"+ex);
+                            JOptionPane.showMessageDialog(null, "Error al crear uno de los ficheros"+ex);
                         }
                     
                         //for que rellena la linea con cada dato de columna del rset
-                        for (i=0; i < nCol; i++){  //for que rellena una linea con cada dato de columna del rset
+                        for (i=0; i<nCol; i++){  //for que rellena una linea con cada dato de columna del rset
                             if ("datetime".equals(rsmetadatos.getColumnTypeName(i+1))){
                                 pasaFecha=rset.getDate(i+1);
                                 this.formatoFecha = new SimpleDateFormat("dd-MM-yyyy");
                                 String fechaConvert=formatoFecha.format(pasaFecha);
-                                filaNueva=filaNueva+fechaConvert;
+                                filaNueva[i+1]=fechaConvert;
                                 }
-                            else if ("RED1".equals(rsmetadatos.getColumnName(i+1))||"RED2".equals(rsmetadatos.getColumnName(i+1))||"RED3".equals(rsmetadatos.getColumnName(i+1))){
-                                filaNueva=filaNueva+Double.toString(Math.floor(Double.parseDouble(rset.getString(i+1))*100)/100); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                            else if ("IMPIGICLIN".equals(rsmetadatos.getColumnName(i+1))){
+                                stringTemp=Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva[i+1]=stringTemp;
+                                sumatorioIgic=sumatorioIgic+Float.parseFloat(stringTemp);
+                                }
+                            else if ("IMPLIN".equals(rsmetadatos.getColumnName(i+1))){
+                                stringTemp=Double.toString(Math.rint(Double.parseDouble(rset.getString(i+1))*1000)/1000); //Paso de String a Float, redondeo, paso de nuevo a String y añado a la cadena
+                                filaNueva[i+1]=stringTemp;
+                                sumatorioBase=sumatorioBase+Float.parseFloat(stringTemp);
                                 }
                             
                             else{
-                                filaNueva=filaNueva+rset.getString(i+1);
+                                filaNueva[i+1]=rset.getString(i+1);
                             }      
                         }
-                        try {
-                            ficheroOut.write(filaNueva+"\n");
-                            //ficheroBuff.write(filaNueva);
-                            //ficheroBuff.newLine();
-                        } catch (IOException ex) {
-                            Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
-                            JOptionPane.showMessageDialog(null, "Error al escribir en fichero (if no equals)"+ex);
-                            
-                        }
+                        contLin++;
+                        arrList.add(filaNueva);
+                        for (int z=0;z<nCol+1;z++)System.out.println(filaNueva[z]); 
                     }
                 }
-                //cierro el ÚLTIMO fichero de escritura
-                try { 
-                    ficheroOut.close();
-                    //this.ficheroBuff.close(); 
-                    //this.ficheroEscritura.close(); 
-                    } catch (IOException ex) {
-                            Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
-                            JOptionPane.showMessageDialog(null, "Error al cerrar fichero (last)"+ex);
-                    }
                 
-                if (veri==false) JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
-                else JOptionPane.showMessageDialog(null, "Fin del proceso. Se generaron"+contNumFich+" ficheros.");
+                //escribo el último fichero con los datos de la ult fact o abono si veri = true, si han habido datos
+                if (veri){
+                    while(contLin>0){
+                            try {
+                                for (j=0;j<nCol;j++){
+                                    ficheroOut.write(filaNueva[j]);  
+                                }
+                                ficheroOut.write("\n");
+                                
+                            } catch (IOException ex) {
+                                Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                JOptionPane.showMessageDialog(null, "Error al escribir en fichero (last)"+ex);
+
+                            }
+                            contLin--;
+                            }
+                    //cierro el ÚLTIMO fichero de escritura
+                    try { 
+                        ficheroOut.close();
+                        //this.ficheroBuff.close(); 
+                        //this.ficheroEscritura.close(); 
+                        } catch (IOException ex) {
+                                Logger.getLogger(FicherosBavel.class.getName()).log(Level.SEVERE, null, ex);
+                                JOptionPane.showMessageDialog(null, "Error al cerrar fichero (last)"+ex);
+                        }  
+                    JOptionPane.showMessageDialog(null, "Fin del proceso. Se generaron "+contNumFich+" ficheros.");
+                }
+                else  JOptionPane.showConfirmDialog(null, "No hay datos que devolver.", "Sin datos",  JOptionPane.CLOSED_OPTION);
                 rset.close();
                 stmt.close();
                 conn.close();
